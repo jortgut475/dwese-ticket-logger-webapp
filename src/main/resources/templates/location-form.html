@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head ('Ticket Logger - Insertar/Actualizar Ubicaciones')"></head>
+<body>
+
+
+<!-- Incluir el fragmento del header -->
+<header th:replace="fragments/header :: header"></header>
+
+
+<main class="container mt-5">
+    <h1 th:text="${location.id == null} ? #{msg.location-form.add} : #{msg.location-form.edit}"></h1>
+
+
+    <!-- Mostrar un mensaje de error si existe -->
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+
+    <form th:action="${location.id == null} ? @{/locations/insert} : @{/locations/update}"
+          th:object="${location}" method="post" class="mt-4">
+        <input type="hidden" th:field="*{id}" />
+
+
+        <div class="mb-3">
+            <label for="address" class="form-label" th:text="#{msg.location.address}"></label>
+            <input type="text" th:field="*{address}" id="address" class="form-control"  />
+            <div th:if="${#fields.hasErrors('address')}" class="text-danger" th:errors="*{address}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="city" class="form-label" th:text="#{msg.location.city}"></label>
+            <input type="text" th:field="*{city}" id="city" class="form-control"  />
+            <div th:if="${#fields.hasErrors('city')}" class="text-danger" th:errors="*{city}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_supermarket" class="form-label" th:text="#{msg.location-form.id_supermarket}"></label>
+            <select id="id_supermarket" th:field="*{supermarket.id}">
+
+                <option value=""></option>
+                <option th:each="supermarket : ${listSupermarkets}"
+                        th:value="${supermarket.id}"
+                        th:text= "${supermarket.name}">
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_province" class="form-label" th:text="#{msg.location-form.id_province}"></label>
+            <select id="id_province" th:field="*{province.id}">
+
+                <option value=""></option>
+                <option th:each="province : ${listProvinces}"
+                        th:value="${province.id}"
+                        th:text="${province.name}">
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+                th:text="${location.id == null} ? #{msg.location-form.insert} : #{msg.location-form.update}"></button>
+    </form>
+
+
+    <!-- Volver a la lista de ubicaciones -->
+    <a href="#" th:href="@{/locations}" class="btn btn-secondary mt-3" th:text="#{msg.location-form.returnback}"></a>
+</main>
+
+
+<!-- Incluir el fragmento del footer -->
+<footer th:replace="fragments/footer :: footer"></footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
