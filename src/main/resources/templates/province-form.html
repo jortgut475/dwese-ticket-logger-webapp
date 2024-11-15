@@ -37,8 +37,8 @@
 
 
         <div class="mb-3">
-            <label for="id_region" class="form-label" th:text="#{msg.province-form.id_region}"></label>
-            <select id="id_region" th:field="*{region.id}">
+            <label for="region_id" class="form-label" th:text="#{msg.province-form.region_id}"></label>
+            <select id="region_id" th:field="*{region.id}">
 
                 <option value=""></option>
                 <option th:each="region : ${listRegions}"

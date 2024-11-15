@@ -6,7 +6,6 @@ import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.dao.ProvinceDAO;
 import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.dao.SupermarketDAO;
 import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Location;
 import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Province;
-import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Region;
 import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Supermarket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +55,7 @@ public class LocationController {
         try {
             listLocations = locationDAO.listAllLocations();
             logger.info("Se han cargado {} ubicaciones.", listLocations.size());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al listar las ubicaciones: {}", e.getMessage());
             model.addAttribute("errorMessage", "Error al listar las ubicaciones.");
         }
@@ -82,7 +80,7 @@ public class LocationController {
             listProvinces =provinceDAO.listAllProvinces();
             listSupermarkets=supermarketDAO.listAllSupermarkets();
             logger.info("Se han cargado {} provincias y {} supermercados ",listProvinces.size(),listSupermarkets.size());
-        }catch(SQLException e){
+        }catch(Exception e){
             logger.error("Error al listar provincias o supermercados {}",e.getMessage());
             model.addAttribute("errorMessage ","Error al listar provincias o supermercados");
         }
@@ -103,11 +101,11 @@ public class LocationController {
         logger.info("Mostrando formulario de edición para la ubicacion con ID {}", id);
         Location location = null;
         try {
-            location=locationDAO.getLocationById(id);
+            location= locationDAO.getLocationById(id);
             if (location == null) {
                 logger.warn("No se encontró la ubicacion con ID {}", id);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al obtener la ubicacion con ID {}: {}", id, e.getMessage());
             model.addAttribute("errorMessage", "Error al obtener la ubicacion.");
         }
@@ -117,7 +115,7 @@ public class LocationController {
             listProvinces=provinceDAO.listAllProvinces();
             listSupermarkets=supermarketDAO.listAllSupermarkets();
             logger.info("Se han cargado {} provincias y {} supermercados ",listProvinces.size(),listSupermarkets.size());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al listar provincias o supermercados {}",e.getMessage());
             model.addAttribute("errorMessage","Error al listar provincias o supermercados");
         }
@@ -146,7 +144,7 @@ public class LocationController {
             locationDAO.insertLocation(location);
             logger.info("Ubicacion {} insertada con éxito.", location.getAddress());
             redirectAttributes.addFlashAttribute("successMessage", "Exito al insertar la ubicacion.");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al insertar la ubicacion {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al insertar la ubicacion.");
         }
@@ -171,7 +169,7 @@ public class LocationController {
         try {
             locationDAO.updateLocation(location);
             logger.info("Ubicacion con ID {} actualizada con éxito.", location.getId());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al actualizar la ubicacion con ID {}: {}", location.getId(), e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar la ubicacion.");
         }
@@ -191,7 +189,7 @@ public class LocationController {
         try {
             locationDAO.deleteLocation(id);
             logger.info("Ubicaciones con ID {} eliminada con éxito.", id);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al eliminar la ubicacion con ID {}: {}", id, e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar la ubicacion.");
         }

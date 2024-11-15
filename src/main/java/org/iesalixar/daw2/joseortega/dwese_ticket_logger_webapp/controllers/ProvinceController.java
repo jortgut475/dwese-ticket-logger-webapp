@@ -8,18 +8,14 @@ import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.yaml.snakeyaml.events.Event;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Controlador que maneja las operaciones CRUD para la entidad `Province`.
@@ -55,7 +51,7 @@ public class ProvinceController {
         try {
             listProvinces = provinceDAO.listAllProvinces();
             logger.info("Se han cargado {} provincias.", listProvinces.size());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al listar las provincias: {}", e.getMessage());
             model.addAttribute("errorMessage", "Error al listar las provincias.");
         }
@@ -76,7 +72,7 @@ public class ProvinceController {
         logger.info("Mostrando formulario para nueva provincia.");
         try {
             listRegions = regionDAO.listAllRegions();
-        }catch(SQLException e){
+        }catch(Exception e){
         }
         model.addAttribute("province", new Province()); // Crear un nuevo objeto provincia
         model.addAttribute("listRegions",listRegions);
@@ -102,7 +98,7 @@ public class ProvinceController {
             if (province == null) {
                 logger.warn("No se encontró la provincia con ID {}", id);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al obtener la provincia con ID {}: {}", id, e.getMessage());
             model.addAttribute("errorMessage", "Error al obtener la provincia.");
         }
@@ -135,7 +131,7 @@ public class ProvinceController {
             }
             provinceDAO.insertProvince(province);
             logger.info("Provincia {} insertada con éxito.", province.getCode());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al insertar la provincia {}: {}", province.getCode(), e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al insertar la provincia.");
         }
@@ -165,7 +161,7 @@ public class ProvinceController {
             }
             provinceDAO.updateProvince(province);
             logger.info("Provincia con ID {} actualizada con éxito.", province.getId());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al actualizar la provincia con ID {}: {}", province.getId(), e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar la provincia.");
         }
@@ -186,7 +182,7 @@ public class ProvinceController {
         try {
             provinceDAO.deleteProvince(id);
             logger.info("Provincias con ID {} eliminada con éxito.", id);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al eliminar la provincia con ID {}: {}", id, e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar la provincia.");
         }

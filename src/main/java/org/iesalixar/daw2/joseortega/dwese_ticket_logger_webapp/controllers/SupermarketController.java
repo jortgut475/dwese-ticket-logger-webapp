@@ -1,9 +1,7 @@
 package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.controllers;
 
 import jakarta.validation.Valid;
-import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.dao.RegionDAO;
 import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.dao.SupermarketDAO;
-import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Region;
 import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Supermarket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +13,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 
@@ -52,7 +49,7 @@ public class SupermarketController {
         try {
             listSupermarkets = supermarketDAO.listAllSupermarkets();
             logger.info("Se han cargado {} supermercados.", listSupermarkets.size());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al listar los supermercados: {}", e.getMessage());
             model.addAttribute("errorMessage", "Error al listar los supermercados.");
         }
@@ -90,7 +87,7 @@ public class SupermarketController {
             if (supermarket == null) {
                 logger.warn("No se encontró el supermercado con ID {}", id);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al obtener el supermercado con ID {}: {}", id, e.getMessage());
             model.addAttribute("errorMessage", "Error al obtener el supermercado.");
         }
@@ -121,7 +118,7 @@ public class SupermarketController {
             }
             supermarketDAO.insertSupermarket(supermarket);
             logger.info("Supermercado {} insertada con éxito.", supermarket.getName());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al insertar el supermercado {}: {}", supermarket.getName(), e.getMessage());
             String errorMessage = messageSource.getMessage("msg.supermarket-controller.insert.error", null, locale);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
@@ -153,7 +150,7 @@ public class SupermarketController {
             }
             supermarketDAO.updateSupermarket(supermarket);
             logger.info("Supermercado con ID {} actualizada con éxito.", supermarket.getId());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al actualizar el supermercado con ID {}: {}", supermarket.getId(), e.getMessage());
             String errorMessage = messageSource.getMessage("msg.supermarket-controller.update.error", null, locale);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
@@ -174,7 +171,7 @@ public class SupermarketController {
         try {
             supermarketDAO.deleteSupermarket(id);
             logger.info("Supermercado con ID {} eliminada con éxito.", id);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al eliminar el supermercado con ID {}: {}", id, e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar el supermercado.");
         }

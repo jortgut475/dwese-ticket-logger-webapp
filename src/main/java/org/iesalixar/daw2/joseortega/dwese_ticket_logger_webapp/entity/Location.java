@@ -1,8 +1,8 @@
 package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
  * Las anotaciones de Lombok ayudan a reducir el código repetitivo al generar automáticamente
  * métodos comunes como getters, setters, constructores, y otros métodos estándar de los objetos.
  */
+@Entity // Marca esta clase como una entidad JPA.
+@Table(name = "locations") // Especifica el nombre de la tabla asociada a esta entidad.
 @Data  // Esta anotación de Lombok genera automáticamente los siguientes métodos:
 // - Getters y setters para todos los campos (id, address, city,supermarket_id, province_id).
 // - Los métodos `equals()` y `hashCode()` basados en todos los campos no transitorios.
@@ -23,12 +25,10 @@ import lombok.NoArgsConstructor;
 // - Un método `canEqual()` que verifica si una instancia puede ser igual a otra.
 // Esto evita tener que escribir manualmente todos estos métodos y mejora la mantenibilidad del código.
 
-
 @NoArgsConstructor  // Esta anotación genera un constructor sin argumentos (constructor vacío),
 //  es útil cuando quieres crear un objeto `Location` sin inicializarlo inmediatamente
 // con valores. Esto es muy útil en frameworks como Hibernate o JPA,
 // que requieren un constructor vacío para la creación de entidades.
-
 
 @AllArgsConstructor
 // Esta anotación genera un constructor que acepta todos los campos como parámetros (id, address, city,supermarket_id, province_id).
@@ -39,24 +39,34 @@ public class Location {
     // Campo que almacena el identificador único de la ubicacion. Este campo suele ser autogenerado
     // por la base de datos, lo que lo convierte en un buen candidato para una clave primaria.
     // No añadimos validación en el ID porque en este caso puede ser nulo al insertarse
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-
     // Campo que almacena la direccion de la ubicacion.
-    // Ejemplo: "1" para CTRA, Camino de Tomares.
+    // Ejemplo: "1" para CTRA, Camino de Tomares.no puede estar vacia
     @NotEmpty(message = "{msg.location.address.notEmpty}")
+    @Column(name = "address", nullable = false)
     private String address;
 
-    // Campo que almacena la direccion de la ubicacion, como "CTRA, Camino de Tomares".
+    // Campo que almacena la direccion de la ubicacion, como "CTRA, Camino de Tomares".no puede estar vacia
     @NotEmpty(message = "{msg.location.city.notEmpty}")
+    @NotEmpty(message = "{msg.location.city.notEmpty}")
+    @Column(name = "city", nullable = false)
     private String city;
 
     // Campo que almacena un identificador del supermercado asociado a la ubicacion, como "1".
     // No añadimos validación en el ID porque en este caso puede ser nulo al insertarse
+    @NotNull(message = "{msg.location.supermarket.notNull}")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supermarket_id", nullable = false) // Clave foránea a la tabla supermercados.
     private Supermarket supermarket;
 
     // Campo que almacena un identificador de la provincia asociado a la ubicacion, como "41".
     // No añadimos validación en el ID porque en este caso puede ser nulo al insertarse
+    @NotNull(message = "{msg.location.province.notNull}")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "province_id", nullable = false) // Clave foránea a la tabla provincias.
     private Province province;
 
     /**

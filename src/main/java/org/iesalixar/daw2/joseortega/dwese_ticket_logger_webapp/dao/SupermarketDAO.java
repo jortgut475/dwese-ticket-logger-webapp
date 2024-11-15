@@ -2,15 +2,14 @@ package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.dao;
 
 import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Supermarket;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public interface SupermarketDAO {
-    List<Supermarket> listAllSupermarkets() throws SQLException;
-    void insertSupermarket(Supermarket supermarket) throws SQLException;
-    void updateSupermarket(Supermarket supermarket) throws SQLException;
-    void deleteSupermarket(int id) throws SQLException;
-    Supermarket getSupermarketById(int id) throws SQLException;
-    boolean existsSupermarketByName(String name) throws SQLException;
-    boolean existsSupermarketByNameAndNotId(String name, int id) throws SQLException;
+    List<Supermarket> listAllSupermarkets() ;
+    void insertSupermarket(Supermarket supermarket) ;
+    void updateSupermarket(Supermarket supermarket) ;
+    void deleteSupermarket(int id);
+    Supermarket getSupermarketById(int id);
+    boolean existsSupermarketByName(String name) ;
+    boolean existsSupermarketByNameAndNotId(String name, int id) ;
 }

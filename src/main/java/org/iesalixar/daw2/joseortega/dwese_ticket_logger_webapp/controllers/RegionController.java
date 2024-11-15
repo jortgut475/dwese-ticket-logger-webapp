@@ -13,8 +13,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 
@@ -53,7 +51,7 @@ public class RegionController {
         try {
             listRegions = regionDAO.listAllRegions();
             logger.info("Se han cargado {} regiones.", listRegions.size());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al listar las regiones: {}", e.getMessage());
             model.addAttribute("errorMessage", "Error al listar las regiones.");
         }
@@ -92,7 +90,7 @@ public class RegionController {
             if (region == null) {
                 logger.warn("No se encontró la región con ID {}", id);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al obtener la región con ID {}: {}", id, e.getMessage());
             model.addAttribute("errorMessage", "Error al obtener la región.");
         }
@@ -122,7 +120,7 @@ public class RegionController {
             }
             regionDAO.insertRegion(region);
             logger.info("Región {} insertada con éxito.", region.getCode());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al insertar la región {}: {}", region.getCode(), e.getMessage());
             String errorMessage = messageSource.getMessage("msg.region-controller.insert.error", null, locale);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
@@ -153,7 +151,7 @@ public class RegionController {
             }
             regionDAO.updateRegion(region);
             logger.info("Región con ID {} actualizada con éxito.", region.getId());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al actualizar la región con ID {}: {}", region.getId(), e.getMessage());
             String errorMessage = messageSource.getMessage("msg.region-controller.update.error", null, locale);
             redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
@@ -174,7 +172,7 @@ public class RegionController {
         try {
             regionDAO.deleteRegion(id);
             logger.info("Región con ID {} eliminada con éxito.", id);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error al eliminar la región con ID {}: {}", id, e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar la región.");
         }
