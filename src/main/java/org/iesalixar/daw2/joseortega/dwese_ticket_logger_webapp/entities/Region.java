@@ -1,4 +1,4 @@
-package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity;
+package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -45,7 +45,7 @@ public class Region {
     // No añadimos validación en el ID porque en este caso puede ser nulo al insertarse
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
 
     // Campo que almacena el código de la región, normalmente una cadena corta que identifica la región.

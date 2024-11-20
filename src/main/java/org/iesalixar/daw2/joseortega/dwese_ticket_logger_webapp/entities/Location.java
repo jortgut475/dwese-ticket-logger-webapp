@@ -1,4 +1,4 @@
-package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity;
+package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -41,7 +41,7 @@ public class Location {
     // No añadimos validación en el ID porque en este caso puede ser nulo al insertarse
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // Campo que almacena la direccion de la ubicacion.
     // Ejemplo: "1" para CTRA, Camino de Tomares.no puede estar vacia

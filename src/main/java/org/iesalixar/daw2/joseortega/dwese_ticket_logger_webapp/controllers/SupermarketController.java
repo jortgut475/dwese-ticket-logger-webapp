@@ -1,8 +1,8 @@
 package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.controllers;
 
 import jakarta.validation.Valid;
-import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.dao.SupermarketDAO;
-import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Supermarket;
+import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entities.Supermarket;
+import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.repositories.SupermarketRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Controlador que maneja las operaciones CRUD para la entidad `Supermarket`.
@@ -29,7 +30,7 @@ public class SupermarketController {
 
     // DAO para gestionar las operaciones de los supermercados en la base de datos
     @Autowired
-    private SupermarketDAO supermarketDAO;
+    private SupermarketRepository supermarketRepository;
 
     @Autowired
     private MessageSource messageSource;
@@ -44,20 +45,13 @@ public class SupermarketController {
      */
     @GetMapping
     public String listSupermarkets(Model model) {
-        logger.info("Solicitando la lista de todas los supermercados...");
+        logger.info("Solicitando la lista de todas las supermercados...");
         List<Supermarket> listSupermarkets = null;
-        try {
-            listSupermarkets = supermarketDAO.listAllSupermarkets();
-            logger.info("Se han cargado {} supermercados.", listSupermarkets.size());
-        } catch (Exception e) {
-            logger.error("Error al listar los supermercados: {}", e.getMessage());
-            model.addAttribute("errorMessage", "Error al listar los supermercados.");
-        }
+        listSupermarkets = supermarketRepository.findAll();
+        logger.info("Se han cargado {} supermercados.", listSupermarkets.size());
         model.addAttribute("listSupermarkets", listSupermarkets); // Pasar la lista de supermercados al modelo
         return "supermarket"; // Nombre de la plantilla Thymeleaf a renderizar
     }
-
-
     /**
      * Muestra el formulario para crear un nuevo supermercado.
      *
@@ -66,30 +60,25 @@ public class SupermarketController {
      */
     @GetMapping("/new")
     public String showNewForm(Model model) {
-        logger.info("Mostrando formulario para nuevo supermercado.");
-        model.addAttribute("supermarket", new Supermarket()); // Crear un nuevo objeto Supermercado
-        return "supermarket-form"; // Nombre de la plantilla Thymeleaf para el formulario
+            logger.info("Mostrando formulario para nueva supermercado.");
+            model.addAttribute("supermarket", new Supermarket()); // Crear un nuevo objeto Supermarket
+            return "supermarket-form"; // Nombre de la plantilla Thymeleaf para el formulario
     }
 
     /**
      * Muestra el formulario para editar un supermercado existente.
      *
-     * @param id    ID del supermercado a editar.
+     * @param id ID del supermercado a editar.
      * @param model Modelo para pasar datos a la vista.
      * @return El nombre de la plantilla Thymeleaf para el formulario.
      */
     @GetMapping("/edit")
-    public String showEditForm(@RequestParam("id") int id, Model model) {
-        logger.info("Mostrando formulario de edición para el supermercado con ID {}", id);
-        Supermarket supermarket = null;
-        try {
-            supermarket = supermarketDAO.getSupermarketById(id);
-            if (supermarket == null) {
-                logger.warn("No se encontró el supermercado con ID {}", id);
-            }
-        } catch (Exception e) {
-            logger.error("Error al obtener el supermercado con ID {}: {}", id, e.getMessage());
-            model.addAttribute("errorMessage", "Error al obtener el supermercado.");
+    public String showEditForm(@RequestParam("id") Long id, Model model) {
+        logger.info("Mostrando formulario de edición para la supermercado con ID {}", id);
+        Optional<Supermarket> supermarket = null;
+        supermarket = supermarketRepository.findById(id);
+        if (supermarket == null) {
+            logger.warn("No se encontró la supermercado con ID {}", id);
         }
         model.addAttribute("supermarket", supermarket);
         return "supermarket-form"; // Nombre de la plantilla Thymeleaf para el formulario
@@ -105,24 +94,18 @@ public class SupermarketController {
     @PostMapping("/insert")
     public String insertSupermarket(@Valid @ModelAttribute("supermarket") Supermarket supermarket, BindingResult result,
                                     RedirectAttributes redirectAttributes, Locale locale) {
-        logger.info("Insertando nuevo supermercado con nombre {}", supermarket.getName());
-        try {
-            if (result.hasErrors()) {
-                return "supermarket-form";  // Devuelve el formulario para mostrar los errores de validación
-            }
-            if (supermarketDAO.existsSupermarketByName(supermarket.getName())) {
-                logger.warn("El nombre del supermercado {} ya existe.", supermarket.getName());
-                String errorMessage = messageSource.getMessage("msg.supermarket-controller.insert.nameExist", null, locale);
-                redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-                return "redirect:/supermarkets/new";
-            }
-            supermarketDAO.insertSupermarket(supermarket);
-            logger.info("Supermercado {} insertada con éxito.", supermarket.getName());
-        } catch (Exception e) {
-            logger.error("Error al insertar el supermercado {}: {}", supermarket.getName(), e.getMessage());
-            String errorMessage = messageSource.getMessage("msg.supermarket-controller.insert.error", null, locale);
-            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+        logger.info("Insertando nueva supermercado con nombre {}", supermarket.getName());
+        if (result.hasErrors()) {
+            return "supermarket-form";  // Devuelve el formulario para mostrar los errores de validación
         }
+        if (supermarketRepository.existsSupermarketByName(supermarket.getName())) {
+            logger.warn("El nombre de la supermercado {} ya existe.", supermarket.getName());
+            String errorMessage = messageSource.getMessage("msg.supermarket-controller.insert.nameExist", null, locale);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/supermarkets/new";
+        }
+        supermarketRepository.save(supermarket);
+        logger.info("Supermercado {} insertada con éxito.", supermarket.getName());
         return "redirect:/supermarkets"; // Redirigir a la lista de supermercados
     }
 
@@ -138,43 +121,32 @@ public class SupermarketController {
     public String updateSupermarket(@Valid @ModelAttribute("supermarket") Supermarket supermarket, BindingResult result,
                                     RedirectAttributes redirectAttributes, Locale locale) {
         logger.info("Actualizando supermercado con ID {}", supermarket.getId());
-        try {
-            if (result.hasErrors()) {
-                return "supermarket-form";  // Devuelve el formulario para mostrar los errores de validación
-            }
-            if (supermarketDAO.existsSupermarketByNameAndNotId(supermarket.getName(), supermarket.getId())) {
-                logger.warn("El nombre del supermercado {} ya existe para otro supermercado.", supermarket.getName());
-                String errorMessage = messageSource.getMessage("msg.supermarket-controller.update.nameExist", null, locale);
-                redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-                return "redirect:/supermarkets/edit?id=" + supermarket.getId();
-            }
-            supermarketDAO.updateSupermarket(supermarket);
-            logger.info("Supermercado con ID {} actualizada con éxito.", supermarket.getId());
-        } catch (Exception e) {
-            logger.error("Error al actualizar el supermercado con ID {}: {}", supermarket.getId(), e.getMessage());
-            String errorMessage = messageSource.getMessage("msg.supermarket-controller.update.error", null, locale);
-            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+        if (result.hasErrors()) {
+            return "supermarket-form";  // Devuelve el formulario para mostrar los errores de validación
         }
+        if (supermarketRepository.existsSupermarketByNameAndNotId(supermarket.getName(), supermarket.getId())) {
+            logger.warn("El nombre de la supermercado {} ya existe para otra supermercado.", supermarket.getName());
+            String errorMessage = messageSource.getMessage("msg.supermarket-controller.update.nameExist", null, locale);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/supermarkets/edit?id=" + supermarket.getId();
+        }
+        supermarketRepository.save(supermarket);
+        logger.info("Supermercado con ID {} actualizada con éxito.", supermarket.getId());
         return "redirect:/supermarkets"; // Redirigir a la lista de supermercados
     }
 
     /**
      * Elimina un supermercado de la base de datos.
      *
-     * @param id                 ID del supermercado a eliminar.
+     * @param id ID del supermercado a eliminar.
      * @param redirectAttributes Atributos para mensajes flash de redirección.
      * @return Redirección a la lista de supermercados.
      */
     @PostMapping("/delete")
-    public String deleteSupermarket(@RequestParam("id") int id, RedirectAttributes redirectAttributes) {
+    public String deleteSupermarket(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
         logger.info("Eliminando supermercado con ID {}", id);
-        try {
-            supermarketDAO.deleteSupermarket(id);
-            logger.info("Supermercado con ID {} eliminada con éxito.", id);
-        } catch (Exception e) {
-            logger.error("Error al eliminar el supermercado con ID {}: {}", id, e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar el supermercado.");
-        }
-        return "redirect:/supermarkets"; // Redirigir a la lista de supermercados.
+        supermarketRepository.deleteById(id);
+        logger.info("Supermercado con ID {} eliminada con éxito.", id);
+        return "redirect:/supermarkets"; // Redirigir a la lista de supermercados
     }
 }

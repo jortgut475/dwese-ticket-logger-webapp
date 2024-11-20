@@ -1,4 +1,4 @@
-package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity;
+package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -43,7 +43,7 @@ public class Category {
     // No añadimos validación en el ID porque en este caso puede ser nulo al insertarse
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // Campo que almacena el nombre de la categoria.
     // Ejemplo: "1" para Electronica no puede estar vacia

@@ -100,3 +100,25 @@ INSERT IGNORE INTO categories (id, name, image, parent_id) VALUES
 (10, 'Muebles', NULL, 3),
 (11, 'Electrodomésticos de Cocina', NULL, 3),
 (12, 'Decoración', NULL, 3);
+
+-- Insertar datos de ejemplo para 'products'
+INSERT IGNORE INTO products (id, name, category_id, price) VALUES
+(1, 'iPhone 14', 4, 999.99),
+(2, 'MacBook Pro', 5, 1999.99),
+(3, 'Samsung Smart TV', 6, 499.99),
+(4, 'Camiseta Hombre', 7, 19.99),
+(5, 'Lavadora LG', 11, 299.99);
+
+-- Insertar datos de ejemplo para 'tickets'
+INSERT IGNORE INTO tickets (id, date, discount, location_id) VALUES
+(1, '2024-10-01', 5.0, 1),
+(2, '2024-10-02', 10.0, 2),
+(3, '2024-10-03', 0.0, 3);
+
+-- Insertar datos de ejemplo para 'product_ticket'
+INSERT IGNORE INTO product_ticket (product_id, ticket_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 1),
+(5, 2);

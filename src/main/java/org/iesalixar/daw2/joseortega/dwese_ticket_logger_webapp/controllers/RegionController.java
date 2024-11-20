@@ -1,8 +1,8 @@
 package org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.controllers;
 
 import jakarta.validation.Valid;
-import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.dao.RegionDAO;
-import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entity.Region;
+import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.entities.Region;
+import org.iesalixar.daw2.joseortega.dwese_ticket_logger_webapp.repositories.RegionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Locale;
-
+import java.util.Optional;
 
 /**
  * Controlador que maneja las operaciones CRUD para la entidad `Region`.
@@ -24,14 +24,11 @@ import java.util.Locale;
 @Controller
 @RequestMapping("/regions")
 public class RegionController {
-
-
     private static final Logger logger = LoggerFactory.getLogger(RegionController.class);
-
 
     // DAO para gestionar las operaciones de las regiones en la base de datos
     @Autowired
-    private RegionDAO regionDAO;
+    private RegionRepository regionRepository;
 
     @Autowired
     private MessageSource messageSource;
@@ -48,17 +45,11 @@ public class RegionController {
     public String listRegions(Model model) {
         logger.info("Solicitando la lista de todas las regiones...");
         List<Region> listRegions = null;
-        try {
-            listRegions = regionDAO.listAllRegions();
-            logger.info("Se han cargado {} regiones.", listRegions.size());
-        } catch (Exception e) {
-            logger.error("Error al listar las regiones: {}", e.getMessage());
-            model.addAttribute("errorMessage", "Error al listar las regiones.");
-        }
+        listRegions = regionRepository.findAll();
+        logger.info("Se han cargado {} regiones.", listRegions.size());
         model.addAttribute("listRegions", listRegions); // Pasar la lista de regiones al modelo
         return "region"; // Nombre de la plantilla Thymeleaf a renderizar
     }
-
 
     /**
      * Muestra el formulario para crear una nueva región.
@@ -82,17 +73,12 @@ public class RegionController {
      * @return El nombre de la plantilla Thymeleaf para el formulario.
      */
     @GetMapping("/edit")
-    public String showEditForm(@RequestParam("id") int id, Model model) {
+    public String showEditForm(@RequestParam("id") Long id, Model model) {
         logger.info("Mostrando formulario de edición para la región con ID {}", id);
-        Region region = null;
-        try {
-            region = regionDAO.getRegionById(id);
-            if (region == null) {
-                logger.warn("No se encontró la región con ID {}", id);
-            }
-        } catch (Exception e) {
-            logger.error("Error al obtener la región con ID {}: {}", id, e.getMessage());
-            model.addAttribute("errorMessage", "Error al obtener la región.");
+        Optional<Region> region = null;
+        region = regionRepository.findById(id);
+        if (region == null) {
+            logger.warn("No se encontró la región con ID {}", id);
         }
         model.addAttribute("region", region);
         return "region-form"; // Nombre de la plantilla Thymeleaf para el formulario
@@ -108,26 +94,19 @@ public class RegionController {
     @PostMapping("/insert")
     public String insertRegion(@Valid @ModelAttribute("region") Region region, BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
         logger.info("Insertando nueva región con código {}", region.getCode());
-        try {
-            if (result.hasErrors()) {
-                return "region-form";  // Devuelve el formulario para mostrar los errores de validación
-            }
-            if (regionDAO.existsRegionByCode(region.getCode())) {
-                logger.warn("El código de la región {} ya existe.", region.getCode());
-                String errorMessage = messageSource.getMessage("msg.region-controller.insert.codeExist", null, locale);
-                redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-                return "redirect:/regions/new";
-            }
-            regionDAO.insertRegion(region);
-            logger.info("Región {} insertada con éxito.", region.getCode());
-        } catch (Exception e) {
-            logger.error("Error al insertar la región {}: {}", region.getCode(), e.getMessage());
-            String errorMessage = messageSource.getMessage("msg.region-controller.insert.error", null, locale);
-            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+        if (result.hasErrors()) {
+            return "region-form";  // Devuelve el formulario para mostrar los errores de validación
         }
+        if (regionRepository.existsRegionByCode(region.getCode())) {
+            logger.warn("El código de la región {} ya existe.", region.getCode());
+            String errorMessage = messageSource.getMessage("msg.region-controller.insert.codeExist", null, locale);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/regions/new";
+        }
+        regionRepository.save(region);
+        logger.info("Región {} insertada con éxito.", region.getCode());
         return "redirect:/regions"; // Redirigir a la lista de regiones
     }
-
 
     /**
      * Actualiza una región existente en la base de datos.
@@ -139,25 +118,20 @@ public class RegionController {
     @PostMapping("/update")
     public String updateRegion(@Valid @ModelAttribute("region") Region region, BindingResult result, RedirectAttributes redirectAttributes, Locale locale) {
         logger.info("Actualizando región con ID {}", region.getId());
-        try {
-            if (result.hasErrors()) {
-                return "region-form";  // Devuelve el formulario para mostrar los errores de validación
-            }
-            if (regionDAO.existsRegionByCodeAndNotId(region.getCode(), region.getId())) {
-                logger.warn("El código de la región {} ya existe para otra región.", region.getCode());
-                String errorMessage = messageSource.getMessage("msg.region-controller.update.codeExist", null, locale);
-                redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-                return "redirect:/regions/edit?id=" + region.getId();
-            }
-            regionDAO.updateRegion(region);
-            logger.info("Región con ID {} actualizada con éxito.", region.getId());
-        } catch (Exception e) {
-            logger.error("Error al actualizar la región con ID {}: {}", region.getId(), e.getMessage());
-            String errorMessage = messageSource.getMessage("msg.region-controller.update.error", null, locale);
-            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+        if (result.hasErrors()) {
+            return "region-form";  // Devuelve el formulario para mostrar los errores de validación
         }
+        if (regionRepository.existsRegionByCodeAndNotId(region.getCode(), region.getId())) {
+            logger.warn("El código de la región {} ya existe para otra región.", region.getCode());
+            String errorMessage = messageSource.getMessage("msg.region-controller.update.codeExist", null, locale);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/regions/edit?id=" + region.getId();
+        }
+        regionRepository.save(region);
+        logger.info("Región con ID {} actualizada con éxito.", region.getId());
         return "redirect:/regions"; // Redirigir a la lista de regiones
     }
+
 
     /**
      * Elimina una región de la base de datos.
@@ -167,15 +141,10 @@ public class RegionController {
      * @return Redirección a la lista de regiones.
      */
     @PostMapping("/delete")
-    public String deleteRegion(@RequestParam("id") int id, RedirectAttributes redirectAttributes) {
+    public String deleteRegion(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
         logger.info("Eliminando región con ID {}", id);
-        try {
-            regionDAO.deleteRegion(id);
-            logger.info("Región con ID {} eliminada con éxito.", id);
-        } catch (Exception e) {
-            logger.error("Error al eliminar la región con ID {}: {}", id, e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar la región.");
-        }
+        regionRepository.deleteById(id);
+        logger.info("Región con ID {} eliminada con éxito.", id);
         return "redirect:/regions"; // Redirigir a la lista de regiones
     }
 }
