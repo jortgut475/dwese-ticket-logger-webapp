@@ -7,6 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -140,11 +144,28 @@ public class RegionController {
      * @param redirectAttributes Atributos para mensajes flash de redirección.
      * @return Redirección a la lista de regiones.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/delete")
     public String deleteRegion(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
         logger.info("Eliminando región con ID {}", id);
-        regionRepository.deleteById(id);
-        logger.info("Región con ID {} eliminada con éxito.", id);
+        //Obtener el objeto de autenticación
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // Verificar si el usuario tiene el rol ADMIN
+        if (auth == null || !auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            String username = (auth != null) ? auth.getName() : "Usuario desconocido";
+            String errorMessage = "El usuario " + username + " no tiene permisos para borrar la región.";
+            logger.warn(errorMessage);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/403"; // Redirige a la página de error 403 o a otra página de tu elección
+        }
+        try {
+            regionRepository.deleteById(id);
+            logger.info("Región con ID {} eliminada con éxito.", id);
+        } catch (Exception e) {
+            logger.error("Error al eliminar la región con ID {}: {}", id,
+                    e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar la región.");
+        }
         return "redirect:/regions"; // Redirigir a la lista de regiones
     }
 }

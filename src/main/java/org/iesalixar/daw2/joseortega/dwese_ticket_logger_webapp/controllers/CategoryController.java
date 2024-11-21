@@ -8,6 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -181,16 +185,28 @@ public class CategoryController {
      * @param redirectAttributes Atributos para mensajes flash de redirección.
      * @return Redirección a la lista de categorias.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/delete")
     public String deleteCategory(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
-        logger.info("Eliminando categoría con ID {}", id);
-        Optional<Category> category = categoryRepository.findById(id);
-        categoryRepository.deleteById(id);
-        // Eliminar la imagen asociada, si existe
-        if (category.get().getImage() != null && !category.get().getImage().isEmpty()) {
-            fileStorageService.deleteFile(category.get().getImage());
+        logger.info("Eliminando categoria con ID {}", id);
+        //Obtener el objeto de autenticación
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // Verificar si el usuario tiene el rol ADMIN
+        if (auth == null || !auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            String username = (auth != null) ? auth.getName() : "Usuario desconocido";
+            String errorMessage = "El usuario " + username + " no tiene permisos para borrar la categoria.";
+            logger.warn(errorMessage);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/403"; // Redirige a la página de error 403 o a otra página de tu elección
         }
-        logger.info("Categoría con ID {} eliminada con éxito.", id);
-        return "redirect:/categories"; // Redirigir a la lista de categorías
+        try {
+            categoryRepository.deleteById(id);
+            logger.info("Categoria con ID {} eliminada con éxito.", id);
+        } catch (Exception e) {
+            logger.error("Error al eliminar la categoria con ID {}: {}", id,
+                e.getMessage());
+        redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar la categoria.");
+        }
+        return "redirect:/categories"; // Redirigir a la lista de categorias
     }
 }

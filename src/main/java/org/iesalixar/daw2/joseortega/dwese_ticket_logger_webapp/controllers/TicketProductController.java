@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -173,10 +177,21 @@ vuelve al formulario si hay errores.
      * @param redirectAttributes Atributos para mensajes flash.
      * @return Redirección a la lista de tickets.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/delete")
     public String deleteTicket(@RequestParam("id") Long id, RedirectAttributes
             redirectAttributes) {
         logger.info("Eliminando ticket con ID {}", id);
+        //Obtener el objeto de autenticación
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // Verificar si el usuario tiene el rol ADMIN
+        if (auth == null || !auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            String username = (auth != null) ? auth.getName() : "Usuario desconocido";
+            String errorMessage = "El usuario " + username + " no tiene permisos para borrar el ticket.";
+            logger.warn(errorMessage);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/403"; // Redirige a la página de error 403 o a otra página de tu elección
+        }
         try {
             ticketRepository.deleteById(id);
             logger.info("Ticket con ID {} eliminado con éxito.", id);
